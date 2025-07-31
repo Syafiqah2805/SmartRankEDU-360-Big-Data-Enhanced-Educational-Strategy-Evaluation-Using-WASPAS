@@ -12,7 +12,7 @@ st.title("📊 SmartRankEDU 360")
 st.subheader("Big Data-Enhanced Educational Strategy Evaluation Using WASPAS")
 
 st.markdown("""
-This system helps evaluate and rank educational strategies or tools using the **WASPAS** method,
+This system helps evaluate and rank educational strategies or tools using the **WASPAS** method, 
 leveraging multi-criteria decision-making (MCDM) powered by educational data.
 """)
 
