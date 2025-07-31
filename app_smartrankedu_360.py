@@ -7,7 +7,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# Set up the page config
 st.set_page_config(page_title="SmartRankEDU 360", layout="wide")
+
+# Title and Introduction
 st.title("📊 SmartRankEDU 360")
 st.subheader("Big Data-Enhanced Educational Strategy Evaluation Using WASPAS")
 
@@ -26,9 +29,9 @@ if uploaded_file:
 
     st.header("2. Set Criteria Type and Weights")
     with st.form("criteria_form"):
-        criteria_names = df.columns[1:]  # Exclude alternative names
-        criteria_types = []
-        criteria_weights = []
+        criteria_names = df.columns[1:]  # Exclude alternative names (first column)
+        criteria_types = []  # To store the type of each criterion
+        criteria_weights = []  # To store the weight of each criterion
 
         st.markdown("**Specify each criterion as 'Benefit' or 'Cost' and assign a weight (0-1).**")
         for c in criteria_names:
@@ -46,47 +49,52 @@ if uploaded_file:
         st.success("Criteria types and weights saved. Calculating WASPAS rankings...")
 
         # --- Normalize the matrix ---
-        decision_matrix = df.iloc[:, 1:].values
+        decision_matrix = df.iloc[:, 1:].values  # Exclude the first column (alternative names)
         norm_matrix = np.zeros_like(decision_matrix, dtype=float)
 
         for j, t in enumerate(criteria_types):
             if t == "Benefit":
-                norm_matrix[:, j] = decision_matrix[:, j] / decision_matrix[:, j].max()
+                norm_matrix[:, j] = decision_matrix[:, j] / decision_matrix[:, j].max()  # Benefit criteria
             else:
-                norm_matrix[:, j] = decision_matrix[:, j].min() / decision_matrix[:, j]
+                norm_matrix[:, j] = decision_matrix[:, j].min() / decision_matrix[:, j]  # Cost criteria
 
-        weights = np.array(criteria_weights)
+        weights = np.array(criteria_weights)  # Convert weights to a numpy array
 
         # --- WASPAS Calculation ---
-        WSM = np.dot(norm_matrix, weights)
-        WPM = np.prod(np.power(norm_matrix, weights), axis=1)
-        WASPAS = 0.5 * WSM + 0.5 * WPM
+        WSM = np.dot(norm_matrix, weights)  # Weighted Sum Model
+        WPM = np.prod(np.power(norm_matrix, weights), axis=1)  # Weighted Product Model
+        WASPAS = 0.5 * WSM + 0.5 * WPM  # Combine both models to calculate WASPAS score
 
+        # Prepare the results for display
         results = pd.DataFrame({
             "Alternative": df.iloc[:, 0],
             "WSM Score": WSM,
             "WPM Score": WPM,
             "WASPAS Score": WASPAS,
-            "Rank": WASPAS.argsort().argsort() + 1
+            "Rank": WASPAS.argsort().argsort() + 1  # Rank the alternatives based on WASPAS score
         }).sort_values("WASPAS Score", ascending=False).reset_index(drop=True)
 
         st.header("3. 🥇 Ranking Results")
         st.dataframe(results, use_container_width=True)
 
+        # Allow the user to download the results as a CSV
         csv = results.to_csv(index=False).encode('utf-8')
         st.download_button("Download Results as CSV", csv, "waspas_results.csv", "text/csv")
 
+        # --- Visualization of Results ---
         st.header("4. 📈 Visualization")
         fig, ax = plt.subplots(figsize=(10, 6))
         sns.barplot(x="WASPAS Score", y="Alternative", data=results, palette="viridis", ax=ax)
         ax.set_title("Ranking of Alternatives by WASPAS Score")
         st.pyplot(fig)
 
+        # --- Score Comparison Table ---
         st.header("5. 📊 Score Comparison Table")
         st.dataframe(results[["Alternative", "WSM Score", "WPM Score", "WASPAS Score"]])
 
 else:
     st.info("Please upload a CSV file to proceed. Example format: [Alternative, Criteria1, Criteria2, ...]")
 
+# Footer information
 st.markdown("---")
 st.caption("© 2025 SmartRankEDU 360 — Built for X-RIC 2025")
