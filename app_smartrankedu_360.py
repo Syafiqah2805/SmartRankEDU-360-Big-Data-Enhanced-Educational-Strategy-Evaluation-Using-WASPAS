@@ -1,10 +1,11 @@
-
 # SmartRankEDU 360: Big Data-Enhanced Educational Strategy Evaluation Using WASPAS
 # Streamlit app to perform MCDM using WASPAS
 
 import streamlit as st
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 st.set_page_config(page_title="SmartRankEDU 360", layout="wide")
 st.title("📊 SmartRankEDU 360")
@@ -74,6 +75,15 @@ if uploaded_file:
 
         csv = results.to_csv(index=False).encode('utf-8')
         st.download_button("Download Results as CSV", csv, "waspas_results.csv", "text/csv")
+
+        st.header("4. 📈 Visualization")
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.barplot(x="WASPAS Score", y="Alternative", data=results, palette="viridis", ax=ax)
+        ax.set_title("Ranking of Alternatives by WASPAS Score")
+        st.pyplot(fig)
+
+        st.header("5. 📊 Score Comparison Table")
+        st.dataframe(results[["Alternative", "WSM Score", "WPM Score", "WASPAS Score"]])
 
 else:
     st.info("Please upload a CSV file to proceed. Example format: [Alternative, Criteria1, Criteria2, ...]")
